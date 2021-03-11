@@ -16,11 +16,17 @@ public class ApiPostController {
         this.postService = postService;
     }
 
-    // Дописать для limit и сортировки
     @GetMapping
     public PostResponse getPosts(@RequestParam(defaultValue = "0") int offset,
                                  @RequestParam(defaultValue = "10") int limit,
                                  @RequestParam(defaultValue = "recent") String mode) {
         return postService.getPostResponse(offset, limit, mode);
+    }
+
+    @GetMapping("/search")
+    public PostResponse getPostsByQuery(@RequestParam(defaultValue = "0") int offset,
+                                           @RequestParam(defaultValue = "10") int limit,
+                                           @RequestParam(defaultValue = "") String query) {
+        return postService.getPostResponseByQuery(offset, limit, query);
     }
 }

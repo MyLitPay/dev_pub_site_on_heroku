@@ -18,4 +18,16 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
                                                               ModerationStatus moderationStatus,
                                                               Date time);
 
+    List<Post> findByTitleLikeAndIsActiveAndModerationStatusAndTimeBefore(String title,
+                                                                          byte isActive,
+                                                                          ModerationStatus moderationStatus,
+                                                                          Date time,
+                                                                          Pageable pageable);
+
+    List<Post> findByTimeBetweenAndIsActiveAndModerationStatusAndTimeBefore(Date startDate,
+                                                                            Date endDate,
+                                                                            byte isActive,
+                                                                            ModerationStatus moderationStatus,
+                                                                            Date time);
+
 }

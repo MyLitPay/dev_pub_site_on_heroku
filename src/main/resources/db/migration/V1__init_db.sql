@@ -1,25 +1,24 @@
-create table captcha_codes (
+create table users (
     id integer not null auto_increment,
-    code varchar(255) not null,
-    secret_code varchar(255) not null,
-    time datetime(6) not null,
-    primary key (id)
-);
-
-create table global_settings (
-    id integer not null auto_increment,
-    code varchar(255) not null,
+    code varchar(255),
+    email varchar(255) not null,
+    is_moderator tinyint not null,
     name varchar(255) not null,
-    value varchar(255) not null,
+    password varchar(255) not null,
+    photo text,
+    reg_time datetime(6) not null,
     primary key (id)
 );
 
-create table post_comments (
+create table posts (
     id integer not null auto_increment,
-    parent_id integer,
+    is_active tinyint not null,
+    moderation_status enum('NEW', 'ACCEPTED', 'DECLINED') not null default 'NEW',
+    moderator_id integer,
     text longtext not null,
     time datetime(6) not null,
-    post_id integer not null,
+    title varchar(255) not null,
+    view_count integer not null,
     user_id integer not null,
     primary key (id)
 );
@@ -33,47 +32,44 @@ create table post_votes (
     primary key (id)
 );
 
-create table posts (
-    id integer not null auto_increment,
-    is_active tinyint not null,
-    moderation_status enum('NEW', 'ACCEPTED', 'DECLINED') not null,
-    moderator_id integer,
-    text longtext not null,
-    time datetime(6) not null,
-    title varchar(255) not null,
-    view_count integer not null,
-    user_id integer not null,
-    primary key (id)
-);
-
-create table tag2post (
-    id integer not null,
-    post_id integer not null,
-    tag_id integer not null auto_increment,
-    primary key (tag_id, post_id)
-);
-
 create table tags (
     id integer not null auto_increment,
     name varchar(255) not null,
     primary key (id)
 );
 
-create table users (
+create table tag2post (
     id integer not null auto_increment,
-    code varchar(255),
-    email varchar(255) not null,
-    is_moderator tinyint not null,
-    name varchar(255) not null,
-    password varchar(255) not null,
-    photo longtext,
-    reg_time datetime(6) not null,
+    post_id integer not null,
+    tag_id integer not null,
     primary key (id)
 );
 
-alter table tags drop index UK_121cwhh4hlnc550mh1tgm6a80;
+create table post_comments (
+    id integer not null auto_increment,
+    parent_id integer,
+    text longtext not null,
+    time datetime(6) not null,
+    post_id integer not null,
+    user_id integer not null,
+    primary key (id)
+);
 
-alter table tags add constraint UK_121cwhh4hlnc550mh1tgm6a80 unique (name);
+create table captcha_codes (
+    id integer not null auto_increment,
+    code tinytext not null,
+    secret_code tinytext not null,
+    time datetime(6) not null,
+    primary key (id)
+);
+
+create table global_settings (
+    id integer not null auto_increment,
+    code varchar(255) not null,
+    name varchar(255) not null,
+    value varchar(255) not null,
+    primary key (id)
+);
 
 alter table post_comments
     add constraint FKaawaqxjs3br8dw5v90w7uu514
