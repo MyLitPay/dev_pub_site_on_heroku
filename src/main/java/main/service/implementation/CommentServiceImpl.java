@@ -1,5 +1,6 @@
 package main.service.implementation;
 
+import main.model.Post;
 import main.model.PostComment;
 import main.repo.CommentRepository;
 import main.service.CommentService;
@@ -18,5 +19,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<PostComment> getAllComments() {
         return (List<PostComment>) commentRepository.findAll();
+    }
+
+    @Override
+    public List<PostComment> getByPost(Post post) {
+        return commentRepository.findByPost(post);
     }
 }

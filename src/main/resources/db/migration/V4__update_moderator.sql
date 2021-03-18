@@ -1,0 +1,1 @@
+update users set is_moderator=1 where id=6;

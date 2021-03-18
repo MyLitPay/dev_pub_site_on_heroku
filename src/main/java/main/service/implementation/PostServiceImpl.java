@@ -2,13 +2,11 @@ package main.service.implementation;
 
 import main.api.response.CalendarResponse;
 import main.api.response.PostResponse;
-import main.api.response.dto.PostDTO;
-import main.api.response.dto.UserInPostDTO;
-import main.model.ModerationStatus;
-import main.model.Post;
-import main.model.PostVote;
-import main.model.User;
+import main.api.response.dto.*;
+import main.exception.PostNotFoundException;
+import main.model.*;
 import main.repo.PostRepository;
+import main.service.CommentService;
 import main.service.PostService;
 import main.service.UserService;
 import main.service.accessory.OffsetBasedPageRequest;
@@ -24,16 +22,23 @@ public class PostServiceImpl implements PostService {
 
     final PostRepository postRepository;
     final UserService userService;
+    final CommentService commentService;
 
-    public PostServiceImpl(PostRepository postRepository, UserService userService) {
+    public PostServiceImpl(PostRepository postRepository, UserService userService, CommentService commentService) {
         this.postRepository = postRepository;
         this.userService = userService;
+        this.commentService = commentService;
     }
 
     @Override
     public List<Post> getAllPosts() {
         return postRepository.findByIsActiveAndModerationStatusAndTimeBefore((byte) 1,
                 ModerationStatus.ACCEPTED, new Date());
+    }
+
+    @Override
+    public int countOfNoModeratedPosts() {
+        return postRepository.countAllByModerationStatus(ModerationStatus.NEW);
     }
 
     @Override
@@ -62,9 +67,38 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public PostResponse getPostResponseByDate(int offset, int limit, String date) {
+        int year = Integer.parseInt(date.substring(0, 4));
+        int month = Integer.parseInt(date.substring(5, 7));
+        int day = Integer.parseInt(date.substring(8));
+        Calendar start = new GregorianCalendar(year, month - 1, day);
+        Calendar end = new GregorianCalendar(year, month - 1, day, 23, 59, 59);
+        Pageable pageable = new OffsetBasedPageRequest(limit, offset);
+        List<Post> postList = postRepository.findByTimeBetweenAndIsActiveAndModerationStatusAndTimeBefore(
+                start.getTime(), end.getTime(), (byte) 1, ModerationStatus.ACCEPTED, new Date(), pageable);
+        List<PostDTO> postDTOList = getPostDTOList(postList, "recent");
+        PostResponse postResponse = new PostResponse();
+        postResponse.setCount(postDTOList.size());
+        postResponse.setPosts(postDTOList);
+        return postResponse;
+    }
+
+    @Override
+    public PostResponse getPostResponseByTag(int offset, int limit, String tag) {
+        Pageable pageable = new OffsetBasedPageRequest(limit, offset);
+        List<Post> postList = postRepository.findDistinctByIsActiveAndModerationStatusAndTimeBeforeAndTagSet_NameLike(
+                (byte) 1, ModerationStatus.ACCEPTED, new Date(), tag, pageable);
+        List<PostDTO> postDTOList = getPostDTOList(postList, "recent");
+        PostResponse postResponse = new PostResponse();
+        postResponse.setCount(postDTOList.size());
+        postResponse.setPosts(postDTOList);
+        return postResponse;
+    }
+
+    @Override
     public CalendarResponse getCalendar(int year) {
         if (year == 0) {
-            year = Calendar.YEAR;
+            year = new GregorianCalendar().getWeekYear();
         }
         CalendarResponse calendarResponse = new CalendarResponse();
         Map<String, Integer> postsMap = new HashMap<>();
@@ -78,13 +112,12 @@ public class PostServiceImpl implements PostService {
         }
         Collections.sort(years);
 
-        int countOfPosts = 1;
         for (Post p : getPostsByYear(year)) {
             String dateString = new SimpleDateFormat("yyyy-MM-dd").format(p.getTime());
             if (postsMap.containsKey(dateString)) {
                 postsMap.put(dateString, postsMap.get(dateString) + 1);
             } else {
-                postsMap.put(dateString, countOfPosts);
+                postsMap.put(dateString, 1);
             }
         }
 
@@ -92,6 +125,37 @@ public class PostServiceImpl implements PostService {
         calendarResponse.setPosts(postsMap);
 
         return calendarResponse;
+    }
+
+    @Override
+    public PostByIdDTO getPostByIdDTO(int id) {
+        Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException("Post not found"));
+        if (post.getIsActive() != 1 ||
+                !(post.getModerationStatus().equals(ModerationStatus.ACCEPTED)) ||
+                post.getTime().after(new Date())) {
+//            if ("не модератор и не автор поста") {
+//                throw new PostNotFoundException("Post not found");
+//            }
+            throw new PostNotFoundException("Post not found");
+        }
+
+        PostByIdDTO postByIdDTO = new PostByIdDTO();
+
+        postByIdDTO.setId(post.getId());
+        postByIdDTO.setTimestamp((post.getTime().getTime()) / 1000);
+        postByIdDTO.setActive(post.getIsActive() != 0);
+        postByIdDTO.setUser(getUserInPost(post));
+        postByIdDTO.setTitle(post.getTitle());
+        postByIdDTO.setText(post.getText()); // Должны быть в HTML
+        postByIdDTO.setLikeCount(getVotes(post).get(0));
+        postByIdDTO.setDislikeCount(getVotes(post).get(1));
+        postByIdDTO.setViewCount(post.getViewCount());
+        postByIdDTO.setComments(getCommentDTOList(post));
+        Set<String> tags = new HashSet<>();
+        post.getTagSet().forEach(t -> tags.add(t.getName()));
+        postByIdDTO.setTags(tags);
+
+        return postByIdDTO;
     }
 
     private List<Post> getAllPosts(int offset, int limit) {
@@ -103,7 +167,7 @@ public class PostServiceImpl implements PostService {
 
     private List<Post> getPostsByQuery(int offset, int limit, String query) {
         Pageable pageable = new OffsetBasedPageRequest(limit, offset);
-        return postRepository.findByTitleLikeAndIsActiveAndModerationStatusAndTimeBefore(
+        return postRepository.findByTitleContainingAndIsActiveAndModerationStatusAndTimeBefore(
                 query, (byte) 1, ModerationStatus.ACCEPTED, new Date(), pageable);
     }
 
@@ -147,22 +211,22 @@ public class PostServiceImpl implements PostService {
         List<PostDTO> sortedPostDTOList;
 
         switch (mode) {
-            case "popular" :
+            case "popular":
                 sortedPostDTOList = postDTOList.stream()
                         .sorted(Comparator.comparingInt(PostDTO::getCommentCount).reversed())
                         .collect(Collectors.toList());
                 break;
-            case "best" :
+            case "best":
                 sortedPostDTOList = postDTOList.stream()
                         .sorted(Comparator.comparingInt(PostDTO::getLikeCount).reversed())
                         .collect(Collectors.toList());
                 break;
-            case "early" :
+            case "early":
                 sortedPostDTOList = postDTOList.stream()
                         .sorted(Comparator.comparingLong(PostDTO::getTimestamp))
                         .collect(Collectors.toList());
                 break;
-            default :
+            default:
                 sortedPostDTOList = postDTOList.stream()
                         .sorted(Comparator.comparingLong(PostDTO::getTimestamp).reversed())
                         .collect(Collectors.toList());
@@ -211,5 +275,30 @@ public class PostServiceImpl implements PostService {
         votes.add(1, dislikeCount);
 
         return votes;
+    }
+
+    private List<CommentDTO> getCommentDTOList(Post post) {
+        List<PostComment> postCommentList = commentService.getByPost(post);
+        List<CommentDTO> commentDTOList = new ArrayList<>();
+
+        for (PostComment comment : postCommentList) {
+            CommentDTO commentDTO = new CommentDTO();
+            commentDTO.setId(comment.getId());
+            commentDTO.setTimestamp((comment.getTime().getTime()) / 1000);
+            commentDTO.setText(comment.getText()); // Должен быть в формате HTML
+            commentDTO.setUser(getUserInCommentDTO(comment));
+
+            commentDTOList.add(commentDTO);
+        }
+        return commentDTOList;
+    }
+
+    private UserInCommentDTO getUserInCommentDTO(PostComment comment) {
+        User user = comment.getUser();
+        UserInCommentDTO userInCommentDTO = new UserInCommentDTO();
+        userInCommentDTO.setId(user.getId());
+        userInCommentDTO.setName(user.getName());
+        userInCommentDTO.setPhoto(user.getPhoto());
+        return userInCommentDTO;
     }
 }

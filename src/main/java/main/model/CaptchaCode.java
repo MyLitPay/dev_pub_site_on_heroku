@@ -15,12 +15,10 @@ public class CaptchaCode {
     @Column(nullable = false)
     private Date time;
 
-//    @Type(type = "text")
     @Column(nullable = false)
     private String code;
 
     @Column(name = "secret_code", nullable = false)
-//    @Type(type = "text")
     private String secretCode;
 
     public CaptchaCode() {

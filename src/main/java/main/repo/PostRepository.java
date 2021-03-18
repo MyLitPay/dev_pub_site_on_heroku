@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Integer> {
     List<Post> findByIsActiveAndModerationStatusAndTimeBefore(byte isActive,
@@ -18,7 +19,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
                                                               ModerationStatus moderationStatus,
                                                               Date time);
 
-    List<Post> findByTitleLikeAndIsActiveAndModerationStatusAndTimeBefore(String title,
+    List<Post> findByTitleContainingAndIsActiveAndModerationStatusAndTimeBefore(String title,
                                                                           byte isActive,
                                                                           ModerationStatus moderationStatus,
                                                                           Date time,
@@ -29,5 +30,21 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
                                                                             byte isActive,
                                                                             ModerationStatus moderationStatus,
                                                                             Date time);
+
+    List<Post> findByTimeBetweenAndIsActiveAndModerationStatusAndTimeBefore(Date startDate,
+                                                                            Date endDate,
+                                                                            byte isActive,
+                                                                            ModerationStatus moderationStatus,
+                                                                            Date time,
+                                                                            Pageable pageable);
+
+    List<Post> findDistinctByIsActiveAndModerationStatusAndTimeBeforeAndTagSet_NameLike(
+            byte isActive,
+            ModerationStatus moderationStatus,
+            Date time,
+            String tag,
+            Pageable pageable);
+
+    int countAllByModerationStatus(ModerationStatus moderationStatus);
 
 }

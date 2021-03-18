@@ -84,6 +84,10 @@ public class User {
         postVote.setUser(null);
     }
 
+    public Role getRole() {
+        return isModerator == 1 ? Role.MODERATOR : Role.USER;
+    }
+
     public int getId() {
         return id;
     }
