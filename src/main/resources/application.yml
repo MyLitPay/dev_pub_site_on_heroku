@@ -3,11 +3,10 @@ spring.jpa.show-sql: true
 spring.datasource.url: jdbc:mysql://localhost:3306/devpub
 spring.datasource.username: root
 spring.datasource.password: testtest
-#jdbc:mysql://localhost:3306/devpub?characterEncoding=UTF-8
 
 blog.title: DevPub
 blog.subtitle: Рассказы разработчиков
-blog.phone: +7 912 123-45-67
-blog.email: mail@gmail.com
+blog.phone: +7 922 669-63-95
+blog.email: paytonklon@gmail.com
 blog.copyright: Mike Loginov
 blog.copyrightfrom: 2021

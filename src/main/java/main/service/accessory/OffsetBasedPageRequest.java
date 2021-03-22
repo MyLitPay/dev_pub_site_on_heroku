@@ -6,7 +6,7 @@ import org.springframework.data.domain.Sort;
 public class OffsetBasedPageRequest implements Pageable {
     private int limit;
     private int offset;
-    private Sort sort = Sort.by("id").ascending();
+    private Sort sort = Sort.by("time").descending();
 
     public OffsetBasedPageRequest(int limit, int offset) {
         this.limit = limit;

@@ -1,5 +1,7 @@
 package main.api.response.dto;
 
+import main.model.User;
+
 public class AuthUserDTO {
 
     private int id;
@@ -9,6 +11,19 @@ public class AuthUserDTO {
     private boolean moderation;
     private int moderationCount;
     private boolean settings;
+
+    public AuthUserDTO() {
+    }
+
+    public AuthUserDTO(User user, int moderationCount) {
+        this.id = user.getId();
+        this.name = user.getName();
+        this.photo = user.getPhoto();
+        this.email = user.getEmail();
+        this.moderation = user.getIsModerator() == 1;
+        this.moderationCount = moderationCount;
+        this.settings = user.getIsModerator() == 1;
+    }
 
     public int getId() {
         return id;

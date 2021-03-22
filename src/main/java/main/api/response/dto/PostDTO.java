@@ -1,5 +1,7 @@
 package main.api.response.dto;
 
+import main.model.Post;
+
 public class PostDTO {
 
     private int id;
@@ -11,6 +13,21 @@ public class PostDTO {
     private int dislikeCount;
     private int commentCount;
     private int viewCount;
+
+    public PostDTO() {
+    }
+
+    public PostDTO(Post post) {
+        this.id = post.getId();
+        this.timestamp = (post.getTime().getTime()) / 1000;
+        this.user = new UserInPostDTO(post.getUser());
+        this.title = post.getTitle();
+        this.announce = post.getAnnounce();
+        this.likeCount = post.getVotes().get(1);
+        this.dislikeCount = post.getVotes().get(0);
+        this.commentCount = post.getPostCommentList().size();
+        this.viewCount = post.getViewCount();
+    }
 
     public int getId() {
         return id;

@@ -17,4 +17,5 @@ public interface PostService {
     PostResponse getPostResponseByTag(int offset, int limit, String tag);
     PostByIdDTO getPostByIdDTO(int id);
     int countOfNoModeratedPosts();
+    PostResponse getMyPosts(int offset, int limit, String status);
 }

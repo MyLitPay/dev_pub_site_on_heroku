@@ -24,29 +24,27 @@ public class AuthService {
         this.postService = postService;
     }
 
-    public SecurityUser addUserToContextHolderAndGetSecurityUser(LoginRequest loginRequest) {
+    public void addUserToContextHolder(LoginRequest loginRequest) {
         Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(auth);
-        return (SecurityUser) auth.getPrincipal();
     }
 
-    public AuthCheckResponse getAuthCheckResponse(String email) {
+    public AuthCheckResponse getAuthCheckResponse() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (email.equals("anonymousUser")) {
+            return new AuthCheckResponse();
+        }
+
         User user = userService.getUserByEmail(email);
 
         AuthCheckResponse response = new AuthCheckResponse();
-        AuthUserDTO authUserDTO = new AuthUserDTO();
-        authUserDTO.setId(user.getId());
-        authUserDTO.setName(user.getName());
-        authUserDTO.setPhoto(user.getPhoto());
-        authUserDTO.setEmail(user.getEmail());
-        authUserDTO.setModeration(user.getIsModerator() == 1);
-        authUserDTO.setModerationCount(user.getIsModerator() == 1 ? postService.countOfNoModeratedPosts() : 0);
-        authUserDTO.setSettings(user.getIsModerator() == 1);
+        int moderationCount = user.getIsModerator() == 1 ? postService.countOfNoModeratedPosts() : 0;
+        AuthUserDTO authUserDTO = new AuthUserDTO(user, moderationCount);
 
         response.setResult(true);
         response.setUser(authUserDTO);
-
         return response;
     }
 }

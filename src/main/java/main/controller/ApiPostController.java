@@ -16,7 +16,6 @@ public class ApiPostController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('READ_AUTHORITY')")
     public PostResponse getPosts(@RequestParam(defaultValue = "0") int offset,
                                  @RequestParam(defaultValue = "10") int limit,
                                  @RequestParam(defaultValue = "recent") String mode) {
@@ -25,8 +24,8 @@ public class ApiPostController {
 
     @GetMapping("/search")
     public PostResponse getPostsByQuery(@RequestParam(defaultValue = "0") int offset,
-                                           @RequestParam(defaultValue = "10") int limit,
-                                           @RequestParam(defaultValue = "") String query) {
+                                        @RequestParam(defaultValue = "10") int limit,
+                                        @RequestParam(defaultValue = "") String query) {
         return postService.getPostResponseByQuery(offset, limit, query);
     }
 
@@ -40,12 +39,20 @@ public class ApiPostController {
     @GetMapping("/byTag")
     public PostResponse getPostsByTag(@RequestParam(defaultValue = "0") int offset,
                                       @RequestParam(defaultValue = "10") int limit,
-                                      @RequestParam String tag) {
+                                      @RequestParam(defaultValue = "") String tag) {
         return postService.getPostResponseByTag(offset, limit, tag);
     }
 
     @GetMapping("/{id}")
     public PostByIdDTO getPostById(@PathVariable("id") int id) {
         return postService.getPostByIdDTO(id);
+    }
+
+    @GetMapping("/my")
+    @PreAuthorize("hasAuthority('READ_AUTHORITY')")
+    public PostResponse getMyPosts(@RequestParam(defaultValue = "0") int offset,
+                                   @RequestParam(defaultValue = "10") int limit,
+                                   @RequestParam(defaultValue = "") String status) {
+        return postService.getMyPosts(offset, limit, status);
     }
 }

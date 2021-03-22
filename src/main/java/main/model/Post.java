@@ -25,7 +25,7 @@ public class Post {
     private ModerationStatus moderationStatus;
 
     @Column(name = "moderator_id")
-    private int moderatorId;
+    private Integer moderatorId;
 
     @ManyToOne(fetch = FetchType.LAZY,
             cascade = {CascadeType.DETACH, CascadeType.MERGE,
@@ -92,6 +92,38 @@ public class Post {
     public void deleteTag(Tag tag) {
         tagSet.remove(tag);
         tag.getPostSet().remove(this);
+    }
+
+    public String getAnnounce() {
+        String text = getText();
+        StringBuilder sb = new StringBuilder();
+        text = text.replaceAll("<.*?>", " ");
+        text = text.replaceAll("\\s+", " ");
+        if (text.length() > 150) {
+            text = text.substring(0, 150);
+        }
+        sb.append(text).append("...");
+
+        return sb.toString();
+    }
+
+    public List<Integer> getVotes() {
+        List<Integer> votes = new ArrayList<>();
+        List<PostVote> voteList = getPostVoteList();
+        int likeCount = 0;
+        int dislikeCount = 0;
+
+        for (PostVote x : voteList) {
+            if (x.getValue() == 1) {
+                likeCount++;
+            } else {
+                dislikeCount++;
+            }
+        }
+        votes.add(0, dislikeCount);
+        votes.add(1, likeCount);
+
+        return votes;
     }
 
     public int getId() {

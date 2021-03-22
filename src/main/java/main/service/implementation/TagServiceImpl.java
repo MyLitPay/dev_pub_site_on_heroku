@@ -58,9 +58,7 @@ public class TagServiceImpl implements TagService {
                 double dWeight = (double) countOfPosts / countOfAllPosts;
                 double weight = dWeight * k;
 
-                TagDTO tagDTO = new TagDTO();
-                tagDTO.setName(t.getName());
-                tagDTO.setWeight(weight);
+                TagDTO tagDTO = new TagDTO(t, weight);
                 tagDTOList.add(tagDTO);
             }
         }

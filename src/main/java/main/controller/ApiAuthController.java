@@ -9,6 +9,7 @@ import main.security.AuthService;
 import main.security.SecurityUser;
 import main.service.CaptchaService;
 import main.service.UserService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,18 +28,17 @@ public class ApiAuthController {
 
     @GetMapping("/check")
     public AuthCheckResponse authCheck() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return email.isEmpty() ?
-                new AuthCheckResponse() : authService.getAuthCheckResponse(email);
+        return authService.getAuthCheckResponse();
     }
 
     @PostMapping("/login")
     public AuthCheckResponse login(@RequestBody LoginRequest loginRequest) {
-        SecurityUser securityUser = authService.addUserToContextHolderAndGetSecurityUser(loginRequest);
-        return authService.getAuthCheckResponse(securityUser.getUsername());
+        authService.addUserToContextHolder(loginRequest);
+        return authService.getAuthCheckResponse();
     }
 
     @GetMapping("/logout")
+    @PreAuthorize("hasAuthority('READ_AUTHORITY')")
     public AuthCheckResponse logout() {
         SecurityContextHolder.clearContext();
         AuthCheckResponse authCheckResponse = new AuthCheckResponse();

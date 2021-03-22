@@ -1,9 +1,20 @@
 package main.api.response.dto;
 
+import main.model.User;
+
 public class UserInCommentDTO {
     private int id;
     private String name;
     private String photo;
+
+    public UserInCommentDTO() {
+    }
+
+    public UserInCommentDTO(User user) {
+        this.id = user.getId();
+        this.name = user.getName();
+        this.photo = user.getPhoto();
+    }
 
     public int getId() {
         return id;

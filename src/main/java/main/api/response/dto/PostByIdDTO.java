@@ -1,7 +1,13 @@
 package main.api.response.dto;
 
+import main.model.Post;
+import main.model.PostComment;
+import main.model.Tag;
+import main.service.UserService;
+
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PostByIdDTO {
     private int id;
@@ -15,6 +21,25 @@ public class PostByIdDTO {
     private int viewCount;
     private List<CommentDTO> comments;
     private Set<String> tags;
+
+    public PostByIdDTO() {
+    }
+
+    public PostByIdDTO(Post post) {
+        this.id = post.getId();
+        this.timestamp = (post.getTime().getTime()) / 1000;
+        this.active = post.getIsActive() == 1;
+        this.user = new UserInPostDTO(post.getUser());
+        this.title = post.getTitle();
+        this.text = post.getText(); // Должны быть в HTML
+        this.likeCount = post.getVotes().get(1);
+        this.dislikeCount = post.getVotes().get(0);
+        this.viewCount = post.getViewCount();
+        this.comments = post.getPostCommentList().stream()
+                .map(CommentDTO::new).collect(Collectors.toList());
+        this.tags = post.getTagSet().stream()
+                .map(Tag::getName).collect(Collectors.toSet());
+    }
 
     public int getId() {
         return id;

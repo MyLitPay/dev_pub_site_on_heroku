@@ -2,15 +2,22 @@ package main.service.implementation;
 
 import main.api.response.CalendarResponse;
 import main.api.response.PostResponse;
-import main.api.response.dto.*;
+import main.api.response.dto.PostByIdDTO;
+import main.api.response.dto.PostDTO;
 import main.exception.PostNotFoundException;
-import main.model.*;
+import main.model.ModerationStatus;
+import main.model.Permission;
+import main.model.Post;
+import main.model.User;
 import main.repo.PostRepository;
 import main.service.CommentService;
 import main.service.PostService;
 import main.service.UserService;
 import main.service.accessory.OffsetBasedPageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -43,9 +50,10 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostResponse getPostResponse(int offset, int limit, String mode) {
+        List<Post> postList = getSortedPosts(offset, limit, mode);
+        List<PostDTO> postDTOList = getPostDTOList(postList);
+
         PostResponse postResponse = new PostResponse();
-        List<Post> postList = getAllPosts(offset, limit);
-        List<PostDTO> postDTOList = getPostDTOList(postList, mode);
         postResponse.setCount(postDTOList.size());
         postResponse.setPosts(postDTOList);
         return postResponse;
@@ -60,7 +68,7 @@ public class PostServiceImpl implements PostService {
 
         PostResponse postResponse = new PostResponse();
         List<Post> postList = getPostsByQuery(offset, limit, query);
-        List<PostDTO> postDTOList = getPostDTOList(postList, "recent");
+        List<PostDTO> postDTOList = getPostDTOList(postList);
         postResponse.setCount(postDTOList.size());
         postResponse.setPosts(postDTOList);
         return postResponse;
@@ -76,7 +84,7 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = new OffsetBasedPageRequest(limit, offset);
         List<Post> postList = postRepository.findByTimeBetweenAndIsActiveAndModerationStatusAndTimeBefore(
                 start.getTime(), end.getTime(), (byte) 1, ModerationStatus.ACCEPTED, new Date(), pageable);
-        List<PostDTO> postDTOList = getPostDTOList(postList, "recent");
+        List<PostDTO> postDTOList = getPostDTOList(postList);
         PostResponse postResponse = new PostResponse();
         postResponse.setCount(postDTOList.size());
         postResponse.setPosts(postDTOList);
@@ -88,7 +96,7 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = new OffsetBasedPageRequest(limit, offset);
         List<Post> postList = postRepository.findDistinctByIsActiveAndModerationStatusAndTimeBeforeAndTagSet_NameLike(
                 (byte) 1, ModerationStatus.ACCEPTED, new Date(), tag, pageable);
-        List<PostDTO> postDTOList = getPostDTOList(postList, "recent");
+        List<PostDTO> postDTOList = getPostDTOList(postList);
         PostResponse postResponse = new PostResponse();
         postResponse.setCount(postDTOList.size());
         postResponse.setPosts(postDTOList);
@@ -128,41 +136,60 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostByIdDTO getPostByIdDTO(int id) {
-        Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException("Post not found"));
-        if (post.getIsActive() != 1 ||
-                !(post.getModerationStatus().equals(ModerationStatus.ACCEPTED)) ||
-                post.getTime().after(new Date())) {
-//            if ("не модератор и не автор поста") {
-//                throw new PostNotFoundException("Post not found");
-//            }
-            throw new PostNotFoundException("Post not found");
+    public PostResponse getMyPosts(int offset, int limit, String status) {
+        Pageable pageable = new OffsetBasedPageRequest(limit, offset);
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.getUserByEmail(userEmail);
+        List<Post> postList;
+        switch (status) {
+            case "inactive" :
+                postList = postRepository.findByUserAndIsActive(user, (byte) 0, pageable);
+                break;
+            case "pending" :
+                postList = postRepository.findByUserAndIsActiveAndModerationStatus(
+                        user, (byte) 1, ModerationStatus.NEW, pageable);
+                break;
+            case "declined" :
+                postList = postRepository.findByUserAndIsActiveAndModerationStatus(
+                        user, (byte) 1, ModerationStatus.DECLINED, pageable);
+                break;
+            case "published" :
+                postList = postRepository.findByUserAndIsActiveAndModerationStatus(
+                        user, (byte) 1, ModerationStatus.ACCEPTED, pageable);
+                break;
+            default:
+                postList = new ArrayList<>();
+                break;
         }
-
-        PostByIdDTO postByIdDTO = new PostByIdDTO();
-
-        postByIdDTO.setId(post.getId());
-        postByIdDTO.setTimestamp((post.getTime().getTime()) / 1000);
-        postByIdDTO.setActive(post.getIsActive() != 0);
-        postByIdDTO.setUser(getUserInPost(post));
-        postByIdDTO.setTitle(post.getTitle());
-        postByIdDTO.setText(post.getText()); // Должны быть в HTML
-        postByIdDTO.setLikeCount(getVotes(post).get(0));
-        postByIdDTO.setDislikeCount(getVotes(post).get(1));
-        postByIdDTO.setViewCount(post.getViewCount());
-        postByIdDTO.setComments(getCommentDTOList(post));
-        Set<String> tags = new HashSet<>();
-        post.getTagSet().forEach(t -> tags.add(t.getName()));
-        postByIdDTO.setTags(tags);
-
-        return postByIdDTO;
+        List<PostDTO> postDTOList = getPostDTOList(postList);
+        PostResponse postResponse = new PostResponse();
+        postResponse.setCount(postDTOList.size());
+        postResponse.setPosts(postDTOList);
+        return postResponse;
     }
 
-    private List<Post> getAllPosts(int offset, int limit) {
+    private List<Post> getSortedPosts(int offset, int limit, String mode) {
         Pageable pageable = new OffsetBasedPageRequest(limit, offset);
-        return postRepository.findByIsActiveAndModerationStatusAndTimeBefore(
-                (byte) 1, ModerationStatus.ACCEPTED, new Date(), pageable);
-//        return postRepository.findAll(pageable).getContent();
+        List<Post> postList;
+        switch (mode) {
+            case "popular":
+                postList =  postRepository.findPopular(
+                        (byte) 1, ModerationStatus.ACCEPTED.toString(), new Date(), pageable);
+                break;
+            case "best":
+                postList = postRepository.findBest(
+                        (byte) 1, ModerationStatus.ACCEPTED.toString(), new Date(), pageable);
+                break;
+            case "early":
+                postList = postRepository.findEarly(
+                        (byte) 1, ModerationStatus.ACCEPTED.toString(), new Date(), pageable);
+                break;
+            default:
+                postList = postRepository.findByIsActiveAndModerationStatusAndTimeBefore(
+                        (byte) 1, ModerationStatus.ACCEPTED, new Date(), pageable);
+                break;
+        }
+        return postList;
     }
 
     private List<Post> getPostsByQuery(int offset, int limit, String query) {
@@ -178,127 +205,30 @@ public class PostServiceImpl implements PostService {
                 startCalendar.getTime(), endCalendar.getTime(), (byte) 1, ModerationStatus.ACCEPTED, new Date());
     }
 
-    private List<PostDTO> getPostDTOList(List<Post> postList, String mode) {
-        List<PostDTO> postDTOList = new ArrayList<>();
-
-        for (Post p : postList) {
-
-//            if (p.getIsActive() != 1 ||
-//                    !(p.getModerationStatus().equals(ModerationStatus.ACCEPTED)) ||
-//                    p.getTime().after(new Date())) {
-//                continue;
-//            }
-
-            PostDTO postDTO = new PostDTO();
-
-            postDTO.setId(p.getId());
-            postDTO.setTimestamp((p.getTime().getTime()) / 1000);
-            postDTO.setUser(getUserInPost(p));
-            postDTO.setTitle(p.getTitle());
-            postDTO.setAnnounce(getAnnounce(p));
-            postDTO.setLikeCount(getVotes(p).get(0));
-            postDTO.setDislikeCount(getVotes(p).get(1));
-            postDTO.setCommentCount(p.getPostCommentList().size());
-            postDTO.setViewCount(p.getViewCount());
-
-            postDTOList.add(postDTO);
-        }
-
-        return getSortedPostDTOList(postDTOList, mode);
+    private List<PostDTO> getPostDTOList(List<Post> postList) {
+        return postList.stream()
+                .map(PostDTO::new).collect(Collectors.toList());
     }
 
-    private List<PostDTO> getSortedPostDTOList(List<PostDTO> postDTOList, String mode) {
-        List<PostDTO> sortedPostDTOList;
+    @Override
+    public PostByIdDTO getPostByIdDTO(int id) {
+        Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException("Post not found"));
 
-        switch (mode) {
-            case "popular":
-                sortedPostDTOList = postDTOList.stream()
-                        .sorted(Comparator.comparingInt(PostDTO::getCommentCount).reversed())
-                        .collect(Collectors.toList());
-                break;
-            case "best":
-                sortedPostDTOList = postDTOList.stream()
-                        .sorted(Comparator.comparingInt(PostDTO::getLikeCount).reversed())
-                        .collect(Collectors.toList());
-                break;
-            case "early":
-                sortedPostDTOList = postDTOList.stream()
-                        .sorted(Comparator.comparingLong(PostDTO::getTimestamp))
-                        .collect(Collectors.toList());
-                break;
-            default:
-                sortedPostDTOList = postDTOList.stream()
-                        .sorted(Comparator.comparingLong(PostDTO::getTimestamp).reversed())
-                        .collect(Collectors.toList());
-                break;
-        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Set<String> authorities = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
+        String authorityEmail = auth.getName();
 
-        return sortedPostDTOList;
-    }
+        if (post.getIsActive() != 1 ||
+                !(post.getModerationStatus().equals(ModerationStatus.ACCEPTED)) ||
+                post.getTime().after(new Date())) {
 
-    private UserInPostDTO getUserInPost(Post post) {
-        User user = userService.getUserById(post.getUser().getId());
-        UserInPostDTO userInPostDTO = new UserInPostDTO();
-        userInPostDTO.setId(user.getId());
-        userInPostDTO.setName(user.getName());
-
-        return userInPostDTO;
-    }
-
-    private String getAnnounce(Post post) {
-        String text = post.getText();
-        StringBuilder sb = new StringBuilder();
-        text = text.replaceAll("<.*?>", " ");
-        text = text.replaceAll("\\s+", " ");
-        if (text.length() > 150) {
-            text = text.substring(0, 150);
-        }
-        sb.append(text).append("...");
-
-        return sb.toString();
-    }
-
-    private List<Integer> getVotes(Post p) {
-        List<Integer> votes = new ArrayList<>();
-        List<PostVote> voteList = p.getPostVoteList();
-        int likeCount = 0;
-        int dislikeCount = 0;
-
-        for (PostVote x : voteList) {
-            if (x.getValue() == 1) {
-                likeCount++;
-            } else {
-                dislikeCount++;
+            if (!authorities.contains(Permission.MODERATE.getAuthority())
+                    && !authorityEmail.equals(post.getUser().getEmail())) {
+                throw new PostNotFoundException("Post not found");
             }
         }
-        votes.add(0, likeCount);
-        votes.add(1, dislikeCount);
 
-        return votes;
-    }
-
-    private List<CommentDTO> getCommentDTOList(Post post) {
-        List<PostComment> postCommentList = commentService.getByPost(post);
-        List<CommentDTO> commentDTOList = new ArrayList<>();
-
-        for (PostComment comment : postCommentList) {
-            CommentDTO commentDTO = new CommentDTO();
-            commentDTO.setId(comment.getId());
-            commentDTO.setTimestamp((comment.getTime().getTime()) / 1000);
-            commentDTO.setText(comment.getText()); // Должен быть в формате HTML
-            commentDTO.setUser(getUserInCommentDTO(comment));
-
-            commentDTOList.add(commentDTO);
-        }
-        return commentDTOList;
-    }
-
-    private UserInCommentDTO getUserInCommentDTO(PostComment comment) {
-        User user = comment.getUser();
-        UserInCommentDTO userInCommentDTO = new UserInCommentDTO();
-        userInCommentDTO.setId(user.getId());
-        userInCommentDTO.setName(user.getName());
-        userInCommentDTO.setPhoto(user.getPhoto());
-        return userInCommentDTO;
+        return new PostByIdDTO(post);
     }
 }

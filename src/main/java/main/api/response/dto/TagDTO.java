@@ -1,8 +1,18 @@
 package main.api.response.dto;
 
+import main.model.Tag;
+
 public class TagDTO {
     private String name;
     private double weight;
+
+    public TagDTO() {
+    }
+
+    public TagDTO(Tag tag, double weight) {
+        this.name = tag.getName();
+        this.weight = weight;
+    }
 
     public String getName() {
         return name;

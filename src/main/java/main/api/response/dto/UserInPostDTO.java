@@ -1,11 +1,21 @@
 package main.api.response.dto;
 
+import main.model.User;
+
 public class UserInPostDTO {
 
     private int id;
     private String name;
 
-    public int getId() {
+    public UserInPostDTO() {
+    }
+
+    public UserInPostDTO(User user) {
+        this.id = user.getId();
+        this.name = user.getName();
+    }
+
+        public int getId() {
         return id;
     }
 

@@ -2,11 +2,14 @@ package main.service.implementation;
 
 import main.api.request.AuthRegisterRequest;
 import main.api.response.AuthRegisterResponse;
+import main.config.SecurityConfig;
 import main.exception.UserNotFoundException;
 import main.model.User;
 import main.repo.CaptchaRepository;
 import main.repo.UserRepository;
 import main.service.UserService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -17,10 +20,12 @@ import java.util.Map;
 public class UserServiceImpl implements UserService {
     final UserRepository userRepository;
     final CaptchaRepository captchaRepository;
+    final PasswordEncoder passwordEncoder;
 
     public UserServiceImpl(UserRepository userRepository, CaptchaRepository captchaRepository) {
         this.userRepository = userRepository;
         this.captchaRepository = captchaRepository;
+        this.passwordEncoder = SecurityConfig.passwordEncoder();
     }
 
     @Override
@@ -61,7 +66,7 @@ public class UserServiceImpl implements UserService {
             user.setRegTime(new Date());
             user.setName(requestUser.getName());
             user.setEmail(requestUser.getEmail());
-            user.setPassword(requestUser.getPassword());
+            user.setPassword(passwordEncoder.encode(requestUser.getPassword()));
             userRepository.saveAndFlush(user);
 
             response.setResult(true);

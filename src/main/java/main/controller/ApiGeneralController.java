@@ -40,7 +40,6 @@ public class ApiGeneralController {
     }
 
     @GetMapping("/tag")
-    @PreAuthorize("hasAuthority('MODERATE_AUTHORITY')")
     public TagResponse getTags(@RequestParam(defaultValue = "") String query) {
         return tagService.getTagResponse(query);
     }
