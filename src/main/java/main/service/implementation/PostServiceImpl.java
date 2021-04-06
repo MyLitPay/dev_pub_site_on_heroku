@@ -243,7 +243,7 @@ public class PostServiceImpl implements PostService {
         post.setText(request.getText());
         addTagsToPost(request.getTags(), post);
 
-        postRepository.saveAndFlush(post); 
+        postRepository.saveAndFlush(post);
 
         return resultResponse;
     }
