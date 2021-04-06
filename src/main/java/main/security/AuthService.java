@@ -3,6 +3,7 @@ package main.security;
 import main.api.request.LoginRequest;
 import main.api.response.AuthCheckResponse;
 import main.api.response.dto.AuthUserDTO;
+import main.exception.UserNotFoundException;
 import main.model.User;
 import main.service.PostService;
 import main.service.UserService;
@@ -33,11 +34,13 @@ public class AuthService {
 
     public AuthCheckResponse getAuthCheckResponse() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        if (email.equals("anonymousUser")) {
+        User user;
+
+        try {
+            user = userService.getUserByEmail(email);
+        } catch (UserNotFoundException ex) {
             return new AuthCheckResponse();
         }
-
-        User user = userService.getUserByEmail(email);
 
         AuthCheckResponse response = new AuthCheckResponse();
         int moderationCount = user.getIsModerator() == 1 ? postService.countOfNoModeratedPosts() : 0;

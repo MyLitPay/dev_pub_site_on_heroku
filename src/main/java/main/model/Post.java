@@ -150,11 +150,11 @@ public class Post {
         this.moderationStatus = moderationStatus;
     }
 
-    public int getModeratorId() {
+    public Integer getModeratorId() {
         return moderatorId;
     }
 
-    public void setModeratorId(int moderatorId) {
+    public void setModeratorId(Integer moderatorId) {
         this.moderatorId = moderatorId;
     }
 

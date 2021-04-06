@@ -58,8 +58,8 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
                          Date time,
                          Pageable pageable);
 
-    List<Post> findByTitleContainingAndIsActiveAndModerationStatusAndTimeBefore(String title,
-                                                                                byte isActive,
+    List<Post> findByTitleContainingIgnoreCaseOrTextContainingIgnoreCaseAndIsActiveAndModerationStatusAndTimeBefore(String title,
+                                                                                String text, byte isActive,
                                                                                 ModerationStatus moderationStatus,
                                                                                 Date time,
                                                                                 Pageable pageable);
@@ -88,8 +88,20 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     List<Post> findByUserAndIsActive(User user, byte isActive, Pageable pageable);
 
+    List<Post> findByModerationStatus(ModerationStatus moderationStatus, Pageable pageable);
+
     List<Post> findByUserAndIsActiveAndModerationStatus(User user, byte isActive,
                                                         ModerationStatus moderationStatus,
                                                         Pageable pageable);
 
+    List<Post> findByModerationStatusAndModeratorId(ModerationStatus moderationStatus,
+                                                    int id,
+                                                    Pageable pageable);
+
+    Optional<Post> findByIdAndIsActiveAndModerationStatusAndTimeBefore(
+            int id,
+            byte isActive,
+            ModerationStatus moderationStatus,
+            Date time
+    );
 }

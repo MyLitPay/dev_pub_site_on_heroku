@@ -1,6 +1,10 @@
 package main.api.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import main.model.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Date;
 
 public class AuthRegisterRequest {
     @JsonProperty("e_mail")
@@ -12,6 +16,16 @@ public class AuthRegisterRequest {
 
     @JsonProperty("captcha_secret")
     private String captchaSecret;
+
+    public User getNewUser(PasswordEncoder passwordEncoder) {
+        User user = new User();
+        user.setIsModerator((byte) 0);
+        user.setRegTime(new Date());
+        user.setName(name);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        return user;
+    }
 
     public String getEmail() {
         return email;

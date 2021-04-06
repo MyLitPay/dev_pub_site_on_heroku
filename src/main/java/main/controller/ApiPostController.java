@@ -1,6 +1,8 @@
 package main.controller;
 
+import main.api.request.PostRequest;
 import main.api.response.PostResponse;
+import main.api.response.ResultResponse;
 import main.api.response.dto.PostByIdDTO;
 import main.service.PostService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -55,4 +57,27 @@ public class ApiPostController {
                                    @RequestParam(defaultValue = "") String status) {
         return postService.getMyPosts(offset, limit, status);
     }
+
+    @GetMapping("/moderation")
+    @PreAuthorize("hasAuthority('MODERATE_AUTHORITY')")
+    public PostResponse getModerate(@RequestParam(defaultValue = "0") int offset,
+                                 @RequestParam(defaultValue = "10") int limit,
+                                 @RequestParam(defaultValue = "") String status) {
+        return postService.getModerationPosts(offset, limit, status);
+    }
+
+    @PostMapping
+    @PreAuthorize("hasAuthority('WRITE_AUTHORITY')")
+    public ResultResponse createPost(@RequestBody PostRequest postRequest) {
+        return postService.createPost(postRequest);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('UPDATE_AUTHORITY')")
+    public ResultResponse updatePost(@PathVariable("id") int id,
+                                     @RequestBody PostRequest postRequest) {
+        return postService.updatePostById(id, postRequest);
+    }
+
+
 }

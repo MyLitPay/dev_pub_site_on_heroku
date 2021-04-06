@@ -1,7 +1,12 @@
 package main.service.accessory;
 
+import main.model.ModerationStatus;
+import main.repo.CommentRepository;
+import main.service.CommentService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
+import java.util.Date;
 
 public class OffsetBasedPageRequest implements Pageable {
     private int limit;
@@ -12,6 +17,35 @@ public class OffsetBasedPageRequest implements Pageable {
         this.limit = limit;
         this.offset = offset;
     }
+
+//    public OffsetBasedPageRequest(int limit, int offset, String mode) {
+//        this.limit = limit;
+//        this.offset = offset;
+//        sortByMode(mode);
+//    }
+//
+//    private void sortByMode(String mode) {
+//        switch (mode) {
+//            case "popular":
+//                postList =  postRepository.findPopular(
+//                        (byte) 1, ModerationStatus.ACCEPTED.toString(), new Date(), pageable);
+//                int count =
+//                sort = Sort.by()
+//                break;
+//            case "best":
+//                postList = postRepository.findBest(
+//                        (byte) 1, ModerationStatus.ACCEPTED.toString(), new Date(), pageable);
+//                break;
+//            case "early":
+//                postList = postRepository.findEarly(
+//                        (byte) 1, ModerationStatus.ACCEPTED.toString(), new Date(), pageable);
+//                break;
+//            default:
+//                postList = postRepository.findByIsActiveAndModerationStatusAndTimeBefore(
+//                        (byte) 1, ModerationStatus.ACCEPTED, new Date(), pageable);
+//                break;
+//        }
+//    }
 
     @Override
     public int getPageNumber() {

@@ -1,17 +1,19 @@
 package main.controller;
 
 import main.api.request.AuthRegisterRequest;
+import main.api.request.CheckRestoreRequest;
 import main.api.request.LoginRequest;
 import main.api.response.AuthCheckResponse;
-import main.api.response.AuthRegisterResponse;
+import main.api.response.ResultResponse;
 import main.api.response.CaptchaResponse;
 import main.security.AuthService;
-import main.security.SecurityUser;
 import main.service.CaptchaService;
 import main.service.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -52,7 +54,17 @@ public class ApiAuthController {
     }
 
     @PostMapping("/register")
-    public AuthRegisterResponse createUser(@RequestBody AuthRegisterRequest requestUser) {
+    public ResultResponse createUser(@RequestBody AuthRegisterRequest requestUser) {
         return userService.createUser(requestUser);
+    }
+
+    @PostMapping("/restore")
+    public ResultResponse sendRestoreCode(@RequestBody Map<String, String> emailMap) {
+        return userService.sendRestoreCode(emailMap.get("email"));
+    }
+
+    @PostMapping("/password")
+    public ResultResponse checkRestoreCode(@RequestBody CheckRestoreRequest request) {
+        return userService.checkRestoreCode(request);
     }
 }

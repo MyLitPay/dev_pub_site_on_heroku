@@ -2,6 +2,7 @@ package main.service.implementation;
 
 import main.api.response.TagResponse;
 import main.api.response.dto.TagDTO;
+import main.exception.TagNotFoundException;
 import main.model.ModerationStatus;
 import main.model.Tag;
 import main.repo.PostRepository;
@@ -26,8 +27,9 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public List<Tag> getTagByName(String name) {
-        return tagRepository.findByNameContaining(name);
+    public Tag getTagByName(String name) {
+        return tagRepository.findFirstByNameLike(name).orElseThrow(
+                () -> new TagNotFoundException("Tag not found"));
     }
 
     @Override
@@ -36,14 +38,21 @@ public class TagServiceImpl implements TagService {
         TagResponse tagResponse = new TagResponse();
         List<TagDTO> tagDTOList = new ArrayList<>();
 
-        List<Tag> tagList = getTagByName(tag);
+        List<Tag> tagList;
+        if (tag.isEmpty()) {
+            tagList = tagRepository.findAll();
+        } else {
+            tagList = tagRepository.findByNameStartingWith(tag);
+        }
+
         tagList.forEach(t -> t.getPostSet().removeIf(p -> p.getIsActive() != 1 ||
                 !(p.getModerationStatus().equals(ModerationStatus.ACCEPTED)) ||
                 p.getTime().after(new Date())));
 
         List<Tag> sortedTagList = tagList.stream()
-                .sorted((t1, t2) -> Integer.compare(t2.getPostSet().size(), t1.getPostSet()
-                        .size())).collect(Collectors.toList());
+                .sorted((t1, t2) -> Integer.compare(t2.getPostSet().size(),
+                        t1.getPostSet().size()))
+                .collect(Collectors.toList());
 
         if (sortedTagList.size() > 0) {
 

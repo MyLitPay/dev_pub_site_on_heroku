@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface TagService {
     TagResponse getTagResponse(String tag);
-    List<Tag> getTagByName(String name);
+    Tag getTagByName(String name);
 }
