@@ -40,30 +40,32 @@ public class TagServiceImpl implements TagService {
 
         List<Tag> tagList;
         if (tag.isEmpty()) {
-            tagList = tagRepository.findAll();
+            tagList = tagRepository.findActiveTags((byte) 1, ModerationStatus.ACCEPTED.toString(), new Date());
         } else {
             tagList = tagRepository.findByNameStartingWith(tag);
         }
 
-        tagList.forEach(t -> t.getPostSet().removeIf(p -> p.getIsActive() != 1 ||
-                !(p.getModerationStatus().equals(ModerationStatus.ACCEPTED)) ||
-                p.getTime().after(new Date())));
+//        tagList.forEach(t -> t.getPostSet().removeIf(p -> p.getIsActive() != 1 ||
+//                !(p.getModerationStatus().equals(ModerationStatus.ACCEPTED)) ||
+//                p.getTime().after(new Date())));
 
-        List<Tag> sortedTagList = tagList.stream()
-                .sorted((t1, t2) -> Integer.compare(t2.getPostSet().size(),
-                        t1.getPostSet().size()))
-                .collect(Collectors.toList());
+//        List<Tag> sortedTagList = tagList.stream()
+//                .sorted((t1, t2) -> Integer.compare(t2.getPostSet().size(),
+//                        t1.getPostSet().size()))
+//                .collect(Collectors.toList());
 
-        if (sortedTagList.size() > 0) {
+        if (tagList.size() > 0) {
 
-            int countOfPostsMostPopularTag = sortedTagList.get(0).getPostSet().size();
+            int countOfPostsMostPopularTag = tagRepository.countOfPostsMostPopularTag(
+                    (byte) 1, ModerationStatus.ACCEPTED.toString(), new Date());
             int countOfAllPosts = postRepository.findByIsActiveAndModerationStatusAndTimeBefore(
                     (byte) 1, ModerationStatus.ACCEPTED, new Date())
                     .size();
             double k = 1 / ((double) countOfPostsMostPopularTag / countOfAllPosts);
 
-            for (Tag t : sortedTagList) {
-                int countOfPosts = t.getPostSet().size();
+            for (Tag t : tagList) {
+                int countOfPosts = tagRepository.countOfPostsWithTagById(
+                        (byte) 1, ModerationStatus.ACCEPTED.toString(), new Date(), t.getId());
                 double dWeight = (double) countOfPosts / countOfAllPosts;
                 double weight = dWeight * k;
 
