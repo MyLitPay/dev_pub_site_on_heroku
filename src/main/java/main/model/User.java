@@ -37,6 +37,10 @@ public class User {
     @Type(type = "text")
     private String photo;
 
+    @Column(name = "code_time")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date codeTime;
+
     @OneToMany(mappedBy = "user",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
@@ -151,6 +155,14 @@ public class User {
 
     public void setPhoto(String photo) {
         this.photo = photo;
+    }
+
+    public Date getCodeTime() {
+        return codeTime;
+    }
+
+    public void setCodeTime(Date codeTime) {
+        this.codeTime = codeTime;
     }
 
     public List<Post> getPostList() {

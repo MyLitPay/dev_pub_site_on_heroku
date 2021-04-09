@@ -26,7 +26,6 @@ public class DefaultController {
     }
 
     @GetMapping("/upload/{first}/{second}/{third}/{name}")
-    @PreAuthorize("hasAuthority('WRITE_AUTHORITY')")
     @ResponseBody
     public FileSystemResource getImage(@PathVariable("first") String first,
                          @PathVariable("second") String second,

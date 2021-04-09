@@ -15,15 +15,20 @@ public class PostRequest {
     private Set<String> tags;
     private String text;
 
-    public Post getNewPost(User user) {
+    public Post getNewPost(User user, boolean preModeration) {
         Post post = new Post();
 
-        Date requestTime = new Date(timestamp);
+        Date requestTime = new Date(timestamp * 1000);
         if (requestTime.before(new Date())) {
             requestTime = new Date();
         }
 
-        post.setModerationStatus(ModerationStatus.NEW);
+        if (preModeration) {
+            post.setModerationStatus(ModerationStatus.NEW);
+        } else {
+            post.setModerationStatus(ModerationStatus.ACCEPTED);
+        }
+
         post.setUser(user);
         post.setTime(requestTime);
         post.setIsActive(active);

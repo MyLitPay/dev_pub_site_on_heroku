@@ -10,6 +10,13 @@ public class ResultResponse {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private Map<String, String> errors;
 
+    public ResultResponse() {
+    }
+
+    public ResultResponse(boolean result) {
+        this.result = result;
+    }
+
     public boolean isResult() {
         return result;
     }

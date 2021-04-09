@@ -4,12 +4,14 @@ import main.api.request.AuthRegisterRequest;
 import main.api.request.CheckRestoreRequest;
 import main.api.response.ResultResponse;
 import main.config.SecurityConfig;
+import main.exception.MultiuserModeDisabledException;
 import main.exception.UserNotFoundException;
 import main.model.CaptchaCode;
 import main.model.User;
 import main.repo.CaptchaRepository;
 import main.repo.UserRepository;
 import main.service.EmailService;
+import main.service.SettingsService;
 import main.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,13 +25,15 @@ public class UserServiceImpl implements UserService {
     final CaptchaRepository captchaRepository;
     final PasswordEncoder passwordEncoder;
     final EmailService emailService;
+    final SettingsService settingsService;
     private static final int MIN_PASSWORD_LENGTH = 6;
     private static final long MS_IN_DAY = 86400000;
 
-    public UserServiceImpl(UserRepository userRepository, CaptchaRepository captchaRepository, EmailService emailService) {
+    public UserServiceImpl(UserRepository userRepository, CaptchaRepository captchaRepository, EmailService emailService, SettingsService settingsService) {
         this.userRepository = userRepository;
         this.captchaRepository = captchaRepository;
         this.emailService = emailService;
+        this.settingsService = settingsService;
         this.passwordEncoder = SecurityConfig.passwordEncoder();
     }
 
@@ -47,6 +51,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResultResponse createUser(AuthRegisterRequest requestUser) {
+
+        if (!settingsService.getGlobalSettings().isMultiuserMode()) {
+            throw new MultiuserModeDisabledException("Multiuser mode disabled");
+        }
+
         ResultResponse response = new ResultResponse();
         Map<String, String> errors = new HashMap<>();
 
@@ -88,6 +97,7 @@ public class UserServiceImpl implements UserService {
                     .orElseThrow(() -> new UserNotFoundException("User not found"));
             String hash = UUID.randomUUID().toString().replaceAll("-", "");
             user.setCode(hash);
+            user.setCodeTime(new Date());
             userRepository.saveAndFlush(user);
 
             String rootUri = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString();
@@ -125,10 +135,10 @@ public class UserServiceImpl implements UserService {
         if (captcha == null) {
             errors.put("captcha", "Код с картинки введён неверно");
         } else {
-            Date captchaTime = captcha.getTime();
-            Date finalCaptchaTime = new Date(captchaTime.getTime() + MS_IN_DAY);
+            Date codeTime = user.getCodeTime();
+            Date finalCodeTime = new Date(codeTime.getTime() + MS_IN_DAY);
 
-            if (new Date().after(finalCaptchaTime)) {
+            if (new Date().after(finalCodeTime)) {
                 String rootUri = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString();
                 errors.put("code", "Ссылка для восстановления пароля устарела.\n" +
                         "<a href=\"" + rootUri + "/auth/restore\">Запросить ссылку снова</a>");

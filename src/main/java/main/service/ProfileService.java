@@ -1,6 +1,5 @@
 package main.service;
 
-import main.api.request.ProfileRequest;
 import main.api.response.ResultResponse;
 import org.springframework.web.multipart.MultipartFile;
 

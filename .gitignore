@@ -3,5 +3,4 @@
 .module-cache
 target
 *.yml
-src/main/resources/application.yml
 upload

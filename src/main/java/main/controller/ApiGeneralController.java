@@ -1,20 +1,16 @@
 package main.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import main.api.request.CommentRequest;
 import main.api.request.ModerationRequest;
-import main.api.request.ProfileRequest;
+import main.api.request.SettingsRequest;
 import main.api.response.*;
 import main.service.*;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.DataInput;
 import java.io.IOException;
-import java.sql.SQLOutput;
 
 @RestController
 @RequestMapping("/api")
@@ -27,16 +23,13 @@ public class ApiGeneralController {
     final ProfileService profileService;
     final CommentService commentService;
 
-    final EmailService emailService;
-
-    public ApiGeneralController(InitResponse initResponse, SettingsService settingsService, TagService tagService, PostService postService, ProfileService profileService, CommentService commentService, EmailService emailService) {
+    public ApiGeneralController(InitResponse initResponse, SettingsService settingsService, TagService tagService, PostService postService, ProfileService profileService, CommentService commentService) {
         this.initResponse = initResponse;
         this.settingsService = settingsService;
         this.tagService = tagService;
         this.postService = postService;
         this.profileService = profileService;
         this.commentService = commentService;
-        this.emailService = emailService;
     }
 
     @GetMapping("/init")
@@ -87,4 +80,22 @@ public class ApiGeneralController {
                                       @RequestBody(required = false) String request) throws IOException {
         return profileService.editProfile(photo, name, email, password, removePhoto, request);
     }
+
+    @GetMapping("/statistics/my")
+    @PreAuthorize("hasAuthority('READ_AUTHORITY')")
+    public StatisticsResponse getMyStatistics() {
+        return settingsService.getMyStatistics();
+    }
+
+    @GetMapping("/statistics/all")
+    public StatisticsResponse getAllStatistics() {
+        return settingsService.getAllStatistics();
+    }
+
+    @PutMapping("/settings")
+    @PreAuthorize("hasAuthority('MODERATE_AUTHORITY')")
+    public void updateGlobalSettings(@RequestBody SettingsRequest request) {
+        settingsService.updateGlobalSettings(request);
+    }
+
 }

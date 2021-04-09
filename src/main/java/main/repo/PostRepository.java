@@ -102,6 +102,13 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             int id,
             byte isActive,
             ModerationStatus moderationStatus,
-            Date time
-    );
+            Date time);
+
+    List<Post> findByUserAndIsActiveAndModerationStatusAndTimeBefore(
+            User user,
+            byte isActive,
+            ModerationStatus moderationStatus,
+            Date time);
+
+
 }

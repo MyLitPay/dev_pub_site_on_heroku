@@ -39,11 +39,6 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<PostComment> getByPost(Post post) {
-        return commentRepository.findByPost(post);
-    }
-
-    @Override
     public CommentResponse addComment(CommentRequest request) {
         int postId = request.getPostId();
         Integer parentId = request.getParentId();
@@ -83,9 +78,4 @@ public class CommentServiceImpl implements CommentService {
 
         return new CommentResponse(commentFromDB);
     }
-
-//    @Override
-//    public int countAllByPost(Post post) {
-//        return commentRepository.countAllByPost(post);
-//    }
 }

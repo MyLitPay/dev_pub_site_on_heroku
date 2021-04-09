@@ -2,9 +2,7 @@ package main.service.implementation;
 
 import main.api.request.ModerationRequest;
 import main.api.request.PostRequest;
-import main.api.response.CalendarResponse;
-import main.api.response.PostResponse;
-import main.api.response.ResultResponse;
+import main.api.response.*;
 import main.api.response.dto.PostByIdDTO;
 import main.api.response.dto.PostDTO;
 import main.exception.PostNotFoundException;
@@ -12,10 +10,7 @@ import main.exception.TagNotFoundException;
 import main.model.*;
 import main.repo.PostRepository;
 import main.security.UserDetailsServiceImpl;
-import main.service.CommentService;
-import main.service.PostService;
-import main.service.TagService;
-import main.service.UserService;
+import main.service.*;
 import main.service.accessory.OffsetBasedPageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,15 +27,17 @@ public class PostServiceImpl implements PostService {
     final CommentService commentService;
     final TagService tagService;
     final UserDetailsServiceImpl userDetailsService;
+    final SettingsService settingsService;
     private static final int MIN_TEXT_LENGTH = 50;
     private static final int MIN_TITLE_LENGTH = 3;
 
-    public PostServiceImpl(PostRepository postRepository, UserService userService, CommentService commentService, TagService tagService, UserDetailsServiceImpl userDetailsService) {
+    public PostServiceImpl(PostRepository postRepository, UserService userService, CommentService commentService, TagService tagService, UserDetailsServiceImpl userDetailsService, SettingsService settingsService) {
         this.postRepository = postRepository;
         this.userService = userService;
         this.commentService = commentService;
         this.tagService = tagService;
         this.userDetailsService = userDetailsService;
+        this.settingsService = settingsService;
     }
 
     @Override
@@ -210,7 +207,9 @@ public class PostServiceImpl implements PostService {
             return resultResponse;
         }
 
-        Post post = request.getNewPost(userDetailsService.getUserFromContextHolder());
+        boolean preModeration = settingsService.getGlobalSettings().isPostPremoderation();
+
+        Post post = request.getNewPost(userDetailsService.getUserFromContextHolder(), preModeration);
         addTagsToPost(request.getTags(), post);
 
         postRepository.saveAndFlush(post);
@@ -237,7 +236,7 @@ public class PostServiceImpl implements PostService {
             return resultResponse;
         }
 
-        post.setTime(new Date(request.getTimestamp()));
+        post.setTime(new Date(request.getTimestamp() * 1000));
         post.setIsActive(request.getActive());
         post.setTitle(request.getTitle());
         post.setText(request.getText());
@@ -329,10 +328,6 @@ public class PostServiceImpl implements PostService {
     public PostByIdDTO getPostByIdDTO(int id) {
         Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException("Post not found"));
 
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        Set<String> authorities = auth.getAuthorities().stream()
-//                .map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
-//        String authorityEmail = auth.getName();
         User user = userDetailsService.getUserFromContextHolder();
 
         if (post.getIsActive() != 1 ||

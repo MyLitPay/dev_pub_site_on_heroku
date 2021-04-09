@@ -2,7 +2,7 @@ package main.security;
 
 import main.exception.UserNotFoundException;
 import main.model.User;
-import main.service.UserService;
+import main.repo.UserRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,15 +13,16 @@ import org.springframework.stereotype.Service;
 @Service
 @Qualifier("userDetailsServiceImpl")
 public class UserDetailsServiceImpl implements UserDetailsService {
-    private final UserService userService;
+    private final UserRepository userRepository;
 
-    public UserDetailsServiceImpl(UserService userService) {
-        this.userService = userService;
+    public UserDetailsServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userService.getUserByEmail(email);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         return new SecurityUser(
                 user.getEmail(),
@@ -41,7 +42,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user;
         try {
-            user = userService.getUserByEmail(email);
+            user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new UserNotFoundException("User not found"));
         } catch (UserNotFoundException ex) {
             user = new User();
         }
