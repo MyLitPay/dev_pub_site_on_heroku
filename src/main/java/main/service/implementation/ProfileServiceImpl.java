@@ -54,11 +54,11 @@ public class ProfileServiceImpl implements ProfileService {
         Map<String, String> errors = new HashMap<>();
 
         if (request != null) {
-            ProfileRequest JsonRequest = new ObjectMapper().readValue(request, ProfileRequest.class);
-            removePhoto = JsonRequest.getRemovePhoto();
-            name = JsonRequest.getName();
-            email = JsonRequest.getEmail();
-            password = JsonRequest.getPassword();
+            ProfileRequest jsonRequest = new ObjectMapper().readValue(request, ProfileRequest.class);
+            removePhoto = jsonRequest.getRemovePhoto();
+            name = jsonRequest.getName();
+            email = jsonRequest.getEmail();
+            password = jsonRequest.getPassword();
         }
 
         if (name != null) {

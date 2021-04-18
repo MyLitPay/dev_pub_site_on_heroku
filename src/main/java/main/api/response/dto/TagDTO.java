@@ -14,6 +14,11 @@ public class TagDTO {
         this.weight = weight;
     }
 
+    public TagDTO(String name, double weight) {
+        this.name = name;
+        this.weight = weight;
+    }
+
     public String getName() {
         return name;
     }

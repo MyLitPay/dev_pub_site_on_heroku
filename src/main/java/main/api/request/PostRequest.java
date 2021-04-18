@@ -15,6 +15,17 @@ public class PostRequest {
     private Set<String> tags;
     private String text;
 
+    public PostRequest() {
+    }
+
+    public PostRequest(long timestamp, byte active, String title, Set<String> tags, String text) {
+        this.timestamp = timestamp;
+        this.active = active;
+        this.title = title;
+        this.tags = tags;
+        this.text = text;
+    }
+
     public Post getNewPost(User user, boolean preModeration) {
         Post post = new Post();
 

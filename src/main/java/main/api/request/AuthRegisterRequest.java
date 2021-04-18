@@ -27,6 +27,14 @@ public class AuthRegisterRequest {
         return user;
     }
 
+    public AuthRegisterRequest(String email, String password, String name, String captcha, String captchaSecret) {
+        this.email = email;
+        this.password = password;
+        this.name = name;
+        this.captcha = captcha;
+        this.captchaSecret = captchaSecret;
+    }
+
     public String getEmail() {
         return email;
     }

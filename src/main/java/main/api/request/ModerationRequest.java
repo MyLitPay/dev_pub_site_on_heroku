@@ -9,6 +9,14 @@ public class ModerationRequest {
 
     private String decision;
 
+    public ModerationRequest() {
+    }
+
+    public ModerationRequest(int postId, String decision) {
+        this.postId = postId;
+        this.decision = decision;
+    }
+
     public int getPostId() {
         return postId;
     }

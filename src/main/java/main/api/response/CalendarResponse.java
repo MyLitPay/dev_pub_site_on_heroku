@@ -7,6 +7,14 @@ public class CalendarResponse {
     private List<Integer> years;
     private Map<String, Integer> posts;
 
+    public CalendarResponse() {
+    }
+
+    public CalendarResponse(List<Integer> years, Map<String, Integer> posts) {
+        this.years = years;
+        this.posts = posts;
+    }
+
     public List<Integer> getYears() {
         return years;
     }

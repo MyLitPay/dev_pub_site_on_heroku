@@ -7,6 +7,7 @@ public class CommentDTO {
     private long timestamp;
     private String text;
     private UserInCommentDTO user;
+    private Integer parentId;
 
     public CommentDTO() {
     }
@@ -16,6 +17,15 @@ public class CommentDTO {
         this.timestamp = (comment.getTime().getTime()) / 1000;
         this.text = comment.getText(); // Должен быть в формате HTML
         this.user = new UserInCommentDTO(comment.getUser());
+        this.parentId = comment.getParentId();
+    }
+
+    public CommentDTO(int id, long timestamp, String text, UserInCommentDTO user, Integer parentId) {
+        this.id = id;
+        this.timestamp = timestamp;
+        this.text = text;
+        this.user = user;
+        this.parentId = parentId;
     }
 
     public int getId() {
@@ -48,5 +58,13 @@ public class CommentDTO {
 
     public void setUser(UserInCommentDTO user) {
         this.user = user;
+    }
+
+    public Integer getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Integer parentId) {
+        this.parentId = parentId;
     }
 }

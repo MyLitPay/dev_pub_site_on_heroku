@@ -15,7 +15,12 @@ public class UserInPostDTO {
         this.name = user.getName();
     }
 
-        public int getId() {
+    public UserInPostDTO(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public int getId() {
         return id;
     }
 

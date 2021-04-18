@@ -12,6 +12,15 @@ public class SettingsRequest {
     @JsonProperty("STATISTICS_IS_PUBLIC")
     private boolean statisticsIsPublic;
 
+    public SettingsRequest() {
+    }
+
+    public SettingsRequest(boolean multiuserMode, boolean postPremoderation, boolean statisticsIsPublic) {
+        this.multiuserMode = multiuserMode;
+        this.postPremoderation = postPremoderation;
+        this.statisticsIsPublic = statisticsIsPublic;
+    }
+
     public String getStringMultiuserMode() {
         if (isMultiuserMode()) {
             return "YES";

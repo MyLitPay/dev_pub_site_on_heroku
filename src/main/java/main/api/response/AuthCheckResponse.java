@@ -10,6 +10,18 @@ public class AuthCheckResponse {
 
     private AuthUserDTO user;
 
+    public AuthCheckResponse() {
+    }
+
+    public AuthCheckResponse(boolean result, AuthUserDTO user) {
+        this.result = result;
+        this.user = user;
+    }
+
+    public AuthCheckResponse(boolean result) {
+        this.result = result;
+    }
+
     public boolean isResult() {
         return result;
     }

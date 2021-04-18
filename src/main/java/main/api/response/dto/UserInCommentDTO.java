@@ -16,6 +16,12 @@ public class UserInCommentDTO {
         this.photo = user.getPhoto();
     }
 
+    public UserInCommentDTO(int id, String name, String photo) {
+        this.id = id;
+        this.name = name;
+        this.photo = photo;
+    }
+
     public int getId() {
         return id;
     }

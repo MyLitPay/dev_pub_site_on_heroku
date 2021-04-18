@@ -29,6 +29,18 @@ public class PostDTO {
         this.viewCount = post.getViewCount();
     }
 
+    public PostDTO(int id, long timestamp, UserInPostDTO user, String title, String announce, int likeCount, int dislikeCount, int commentCount, int viewCount) {
+        this.id = id;
+        this.timestamp = timestamp;
+        this.user = user;
+        this.title = title;
+        this.announce = announce;
+        this.likeCount = likeCount;
+        this.dislikeCount = dislikeCount;
+        this.commentCount = commentCount;
+        this.viewCount = viewCount;
+    }
+
     public int getId() {
         return id;
     }

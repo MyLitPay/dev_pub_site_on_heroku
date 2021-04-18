@@ -58,7 +58,7 @@ public class ApiPostController {
     @PreAuthorize("hasAuthority('READ_AUTHORITY')")
     public PostResponse getMyPosts(@RequestParam(defaultValue = "0") int offset,
                                    @RequestParam(defaultValue = "10") int limit,
-                                   @RequestParam(defaultValue = "") String status) {
+                                   @RequestParam(defaultValue = "published") String status) {
         return postService.getMyPosts(offset, limit, status);
     }
 
@@ -66,7 +66,7 @@ public class ApiPostController {
     @PreAuthorize("hasAuthority('MODERATE_AUTHORITY')")
     public PostResponse getModerate(@RequestParam(defaultValue = "0") int offset,
                                  @RequestParam(defaultValue = "10") int limit,
-                                 @RequestParam(defaultValue = "") String status) {
+                                 @RequestParam(defaultValue = "new") String status) {
         return postService.getModerationPosts(offset, limit, status);
     }
 

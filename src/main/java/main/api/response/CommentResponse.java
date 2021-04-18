@@ -12,6 +12,10 @@ public class CommentResponse {
         this.id = comment.getId();
     }
 
+    public CommentResponse(int id) {
+        this.id = id;
+    }
+
     public int getId() {
         return id;
     }
