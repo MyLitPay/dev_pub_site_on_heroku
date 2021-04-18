@@ -2,7 +2,7 @@
 .idea
 .module-cache
 target
-*.yml
+#*.yml
 upload
-test
-data.sql
+#test
+#data.sql
