@@ -1,24 +1,28 @@
-#spring.jpa.hibernate.ddl-auto: validate
-spring.jpa.show-sql: true
-#spring.datasource.url: jdbc:mysql://localhost:3306/devpub
-#spring.datasource.username: root
-#spring.datasource.password: testtest
-spring.datasource.url: jdbc:h2:mem:test
-spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.H2Dialect
-spring.h2.console.enabled: true
+spring:
+  jpa:
+    hibernate.ddl-auto: validate
+    show-sql: true
+  datasource:
+    url: jdbc:mysql://localhost:3306/devpub
+    username: root
+    password: testtest
+  mail:
+    host: smtp.mail.ru
+    port: 465
+    protocol: smtps
+    username: username
+    password: password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls.enable: true
 
 
-blog.title: DevPub
-blog.subtitle: Рассказы разработчиков
-blog.phone: +7 922 669-63-95
-blog.email: paytonklon@gmail.com
-blog.copyright: Mike Loginov
-blog.copyrightfrom: 2021
-
-spring.mail.host: smtp.mail.ru
-spring.mail.port: 465
-spring.mail.protocol: smtps
-spring.mail.username: username
-spring.mail.password: password
-spring.mail.properties.mail.smtp.auth: true
-spring.mail.properties.mail.smtp.starttls.enable: true
+blog:
+  title: DevPub
+  subtitle: Рассказы разработчиков
+  phone: +7 922 669-63-95
+  email: paytonklon@gmail.com
+  copyright: Mike Loginov
+  copyrightfrom: 2021

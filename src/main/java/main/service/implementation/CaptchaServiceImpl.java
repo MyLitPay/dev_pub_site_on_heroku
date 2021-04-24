@@ -6,6 +6,7 @@ import main.api.response.CaptchaResponse;
 import main.model.CaptchaCode;
 import main.repo.CaptchaRepository;
 import main.service.CaptchaService;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
@@ -28,7 +29,8 @@ public class CaptchaServiceImpl implements CaptchaService {
         String image;
 
         Cage cage = new GCage();
-        code = cage.getTokenGenerator().next();
+//        code = cage.getTokenGenerator().next();
+        code = RandomStringUtils.randomAlphabetic(5).toLowerCase();
         secret = String.valueOf(UUID.randomUUID());
 
         byte[] draw = cage.draw(code);

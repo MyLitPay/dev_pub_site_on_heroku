@@ -4,5 +4,5 @@
 target
 #*.yml
 upload
-#test
-#data.sql
+test
+data.sql
