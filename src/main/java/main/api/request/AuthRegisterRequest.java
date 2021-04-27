@@ -8,7 +8,7 @@ import java.util.Date;
 
 public class AuthRegisterRequest {
     @JsonProperty("e_mail")
-    private String email;
+    private String email; 
 
     private String password;
     private String name;
