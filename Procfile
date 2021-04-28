@@ -1,0 +1,1 @@
+web: java -jar target/DevPub-1.0.jar
