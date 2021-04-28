@@ -2,22 +2,27 @@ spring:
   jpa:
     hibernate.ddl-auto: validate
     show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
   datasource:
-    url: jdbc:mysql://localhost:3306/devpub
+    url: jdbc:${CLEARDB_DATABASE_URL:mysql://localhost:3306/devpub}
     username: root
     password: testtest
   mail:
     host: smtp.mail.ru
     port: 465
     protocol: smtps
-    username: username
-    password: password
+    username: loginov-mikhail@mail.ru
+    password: EtVmqH6lOo5NUESCt80W
     properties:
       mail:
         smtp:
           auth: true
           starttls.enable: true
 
+server:
+  port: ${PORT:8080}
 
 blog:
   title: DevPub
