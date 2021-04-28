@@ -3,6 +3,6 @@
 .module-cache
 target
 #*.yml
-upload
+#upload
 test
 data.sql
