@@ -48,7 +48,7 @@ public class CommentServiceImpl implements CommentService {
                 throw new BadCommentRequestException("Bad request");
             }
         } else {
-            if (commentRepository.findFirstByPost_Id(postId).isEmpty()) {
+            if (postRepository.findById(postId).isEmpty()) {
                 throw new BadCommentRequestException("Bad request");
             }
         }
