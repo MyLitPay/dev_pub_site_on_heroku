@@ -98,6 +98,7 @@ public class Post {
         String text = getText();
         StringBuilder sb = new StringBuilder();
         text = text.replaceAll("<.*?>", " ");
+        text = text.replaceAll("[^A-Za-zА-Яа-я0-9]", " ");
         text = text.replaceAll("\\s+", " ");
         if (text.length() > 150) {
             text = text.substring(0, 150);

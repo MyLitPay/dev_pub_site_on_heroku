@@ -9,6 +9,10 @@ spring:
     url: jdbc:${CLEARDB_DATABASE_URL:mysql://localhost:3306/devpub}
     username: root
     password: testtest
+  servlet:
+    multipart:
+      max-file-size: 6MB
+      max-request-size: 10MB
   mail:
     host: smtp.mail.ru
     port: 465
