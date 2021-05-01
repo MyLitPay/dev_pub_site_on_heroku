@@ -17,8 +17,8 @@ spring:
     host: smtp.mail.ru
     port: 465
     protocol: smtps
-    username: loginov-mikhail@mail.ru
-    password: EtVmqH6lOo5NUESCt80W
+    username: user
+    password: pass
     properties:
       mail:
         smtp:
