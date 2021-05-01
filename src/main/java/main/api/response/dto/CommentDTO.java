@@ -15,7 +15,7 @@ public class CommentDTO {
     public CommentDTO(PostComment comment) {
         this.id = comment.getId();
         this.timestamp = (comment.getTime().getTime()) / 1000;
-        this.text = comment.getText(); // Должен быть в формате HTML
+        this.text = comment.getText();
         this.user = new UserInCommentDTO(comment.getUser());
         this.parentId = comment.getParentId();
     }
